@@ -64,14 +64,15 @@ def searchwords(question):
 	target_url = "http://127.0.0.1:8080/v1/completions"
 	question_for_search = copy.deepcopy(template);
 
-	question_for_search["prompt"] = "你是一个音乐爱好者\n请根据下面描述推荐在音乐app中搜索歌曲用的搜索短语，短语要反应输入的意思但不能包含输入的内容，把返回的搜索短语格式化成这个格式<!<...>!>，内容尽量200个字以内:\n" + question;
+	question_for_search["prompt"] = "你是一个音乐爱好者\n请推荐在音乐app中搜索歌曲用的搜索词，用<!搜索词1 搜索词2 ...!>格式，根据提问内容中的心情，节日，语言，歌手等信息提取两三个五个字以内的搜索词，内容尽量200个字以内:\n" + question;
 	body = json.dumps(question_for_search);
 	r = requests.post(target_url,data=body);
 	ret = json.loads(r.text)["content"];
-	pos = ret.find("<!<");
+	print("搜索词返回:<%s>"%ret);
+	pos = ret.find("<!");
 	if pos != -1:
-		ret1 = ret[pos+3:]
-		pos = ret1.find(">!>");
+		ret1 = ret[pos+2:]
+		pos = ret1.find("!>");
 		if pos != -1:
 			ret = ret1[:pos];
 	print("模型给出的搜索短语是:<%s>"%ret);
@@ -107,8 +108,9 @@ async def handle_completions(request):
 
 		prompt = "你是一个音乐爱好者，已知歌曲:\n"
 		for song in songlist:
-			prompt += "\tkey=" + song["key"] + " name=" + song["name"] + " artist=" + song["artistName"] + " genre=" + song["genreName"] + " url=" + song["linkShare"] + " image=" + song["image"] + "\n"
-		prompt += "请根据以上内容给出推荐结果，不要把url做成超链接，结果中请附带文本格式的url，不要推荐列表之外的歌曲，不超过800字:"
+			#prompt += "\tkey=" + song["key"] + " name=" + song["name"] + " artist=" + song["artistName"] + " genre=" + song["genreName"] + " url=" + song["linkShare"] + " image=" + song["image"] + "\n"
+			prompt += "\tname=" + song["name"] + " artist=" + song["artistName"] + " genre=" + song["genreName"] + " sharelink=" + song["linkShare"] + " image=" + song["image"] + "\n"
+		prompt += "请根据以上内容给出推荐结果，每首歌曲单独一行，不要把sharelink做成超链接，推荐结果用`` name | sharelink ``的格式返回，不要推荐列表之外的歌曲，不超过800字:"
 
 		for msg in obj["messages"]:
 			if msg["role"] == "system":
