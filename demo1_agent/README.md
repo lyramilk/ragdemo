@@ -1,54 +1,11 @@
-[TOC]
-# 部署
-## 准备工作
-安装lfs以便下载git文件指针指向的文件
-```
-sudo apt install git-lfs
-```
-## 下载模型
-### llama3.2-3B模型
-```
-git clone https://www.modelscope.cn/LLM-Research/Llama-3.2-3B-Instruct.git
-```
-### Qwen2.5-3B模型
-```
-git clone https://www.modelscope.cn/Qwen/Qwen2.5-3B-Instruct.git
-```
+# 前端
+这里使用了llama.cpp项目的examples/server/public/index.html文件作为前端。在aiohttp中把它映射到了web服务的根目录``http://127.0.0.1:8888/``
 
-## 编译安装 llama.cpp
+# 后端及大模型
+用aiohttp代理了llama.cpp的问答请求，在llama.cpp中运行的是Qwen2.5-3B-Instruct模型。
+通过aiohttp把部署在``http://127.0.0.1:8080/v1/chat/completions``的llama.cpp映射到aiohttp服务的``http://127.0.0.1:8888/v1/chat/completions``为实现打字效果，使用了aiohttp的``aiohttp.web.StreamResponse``响应类
 
-### 下载代码
+# 引用了jieba分词
 ```
-git clone https://github.com/ggerganov/llama.cpp
-```
-
-### 编译(cuda方式)
-#### 安装软件包
-
-```
-sudo apt install nvidia-cuda-toolkit
-
-```
-
-#### 带cuda编译llama.cpp
-```
-cmake -B build_llama_cpp  -DGGML_CUDA=ON llama.cpp
-cmake --build build_llama_cpp --config Release -j
-```
-
-### 编译(cpu方式)
-```
-cmake -B build_llama_cpp llama.cpp
-cmake --build build_llama_cpp --config Release -j
-```
-
-## 运行
-### 转换模型格式
-```
-python3 llama.cpp/convert_hf_to_gguf.py Llama-3.2-3B-Instruct
-```
-
-### 启动llama
-```
-build_llama_cpp/bin/llama-server -ngl 30 -m Llama-3.2-3B-Instruct/Llama-3.2-3B-Instruct-F16.gguf
+pip3 install jieba
 ```
