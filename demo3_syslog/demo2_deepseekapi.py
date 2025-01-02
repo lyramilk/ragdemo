@@ -23,7 +23,6 @@ class ChatDataIter:
 class ChatData:
 	def __init__(self):
 		self.appkey = os.environ.get('DEEPSEEK_APIKEY');
-		print(self.appkey);
 		self.data = []
 		self.system_prompt = None;
 		
@@ -84,8 +83,7 @@ class ChatData:
 		reqbody["messages"] = messages;
 		
 		r = requests.post(target_url,headers={"Content-Type": "application/json","Authorization": "Bearer " + self.appkey},data=json.dumps(reqbody));
-
-		print(r.text);
+		return json.loads(json.loads(r.text)["choices"][-1]["message"]["content"]);
 
 
 
@@ -122,4 +120,6 @@ Jan  2 19:15:01 vn-vdc-192-168-100-133 CRON[1240192]: (root) CMD (command -v deb
 Jan  2 19:15:01 vn-vdc-192-168-100-133 CRON[1240193]: (lyramilk) CMD (/home/lyramilk/.local/bin/python3-lark /data/lyramilk/ClusterSS/src/lyramilk/cavedb_music_alive.task.py)
 """);
 
-session.get();
+r = session.get();
+
+print(json.dumps(r,indent=4));
